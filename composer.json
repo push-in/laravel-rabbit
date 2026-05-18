@@ -1,5 +1,5 @@
 {
-    "name": "pushin/laravel-rabbit",
+    "name": "pushinbr/laravel-rabbit",
     "description": "RabbitMQ client library for Laravel with publishing, consuming, topology, TLS, confirms, failover, and security guards.",
     "type": "library",
     "license": "MIT",

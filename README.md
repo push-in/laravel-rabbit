@@ -56,7 +56,7 @@ ProcessOrder::dispatch($order)->onQueue('orders');
 Install the package:
 
 ```bash
-composer require pushin/laravel-rabbit
+composer require pushinbr/laravel-rabbit
 ```
 
 Publish the configuration file:

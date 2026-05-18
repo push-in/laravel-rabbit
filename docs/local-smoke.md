@@ -9,7 +9,7 @@ mkdir -p .playground
 composer create-project laravel/laravel .playground/laravel-rabbit-smoke
 cd .playground/laravel-rabbit-smoke
 composer config repositories.pushin-laravel-rabbit '{"type":"path","url":"../..","options":{"symlink":true}}'
-composer require "pushin/laravel-rabbit:*@dev" -W
+composer require "pushinbr/laravel-rabbit:*@dev" -W
 ```
 
 ## Configure `.env`
