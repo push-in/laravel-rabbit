@@ -2,6 +2,13 @@
 
 All notable changes to `pushinbr/laravel-rabbit` will be documented in this file.
 
+## [0.1.1] - 2026-05-18
+
+### Fixed
+
+- Added compatibility for older Orchestra Testbench releases in the package test suite.
+- Updated the GitHub Actions checkout action to the current Node 24 compatible major version.
+
 ## [0.1.0] - 2026-05-18
 
 ### Added
@@ -16,3 +23,4 @@ All notable changes to `pushinbr/laravel-rabbit` will be documented in this file
 - PHPUnit test suite for unit, feature, service provider, and queue integration behavior.
 
 [0.1.0]: https://github.com/push-in/laravel-rabbit/releases/tag/v0.1.0
+[0.1.1]: https://github.com/push-in/laravel-rabbit/releases/tag/v0.1.1
