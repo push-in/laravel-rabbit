@@ -1,5 +1,10 @@
 # Laravel Rabbit
 
+[![Tests](https://github.com/push-in/laravel-rabbit/actions/workflows/tests.yml/badge.svg)](https://github.com/push-in/laravel-rabbit/actions/workflows/tests.yml)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/pushinbr/laravel-rabbit.svg)](https://packagist.org/packages/pushinbr/laravel-rabbit)
+[![Total Downloads](https://img.shields.io/packagist/dt/pushinbr/laravel-rabbit.svg)](https://packagist.org/packages/pushinbr/laravel-rabbit)
+[![License](https://img.shields.io/packagist/l/pushinbr/laravel-rabbit.svg)](LICENSE.md)
+
 RabbitMQ library for Laravel with a native queue driver, AMQP 0-9-1 publishing and consuming, topology declarations, TLS, publisher confirms, QoS, host failover, RabbitMQ Management HTTP API support, and security validation.
 
 ```php
