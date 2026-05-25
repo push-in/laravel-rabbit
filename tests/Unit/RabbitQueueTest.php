@@ -42,6 +42,29 @@ class RabbitQueueTest extends TestCase
         $this->assertSame(0, $headers['laravel-attempts']);
     }
 
+    public function test_it_does_not_reselect_confirm_mode_for_multiple_job_publishes(): void
+    {
+        $channel = new FakeAmqpChannel();
+        $queue = $this->queue(
+            $channel,
+            ['exchange' => 'jobs'],
+            connectionConfig: [
+                'publisher_confirms' => [
+                    'enabled' => true,
+                    'wait' => true,
+                    'timeout' => 5.0,
+                ],
+            ],
+        );
+
+        $queue->pushRaw('{"uuid":"job-1"}', 'emails');
+        $queue->pushRaw('{"uuid":"job-2"}', 'emails');
+
+        $this->assertCount(1, $channel->confirmSelects);
+        $this->assertCount(2, $channel->published);
+        $this->assertSame([5.0, 5.0], $channel->ackWaits);
+    }
+
     public function test_it_schedules_delayed_jobs_with_ttl_dead_letter_queues_by_default(): void
     {
         $channel = new FakeAmqpChannel();
@@ -226,17 +249,24 @@ class RabbitQueueTest extends TestCase
     /**
      * @param array<string, mixed> $config
      */
-    private function queue(FakeAmqpChannel $channel, array $config = [], ?FakeManagementClient $management = null): RabbitQueue
+    private function queue(
+        FakeAmqpChannel $channel,
+        array $config = [],
+        ?FakeManagementClient $management = null,
+        array $connectionConfig = [],
+    ): RabbitQueue
     {
+        $defaultConnectionConfig = [
+            'vhost' => '/',
+            'topology' => ['auto_declare' => false],
+            'qos' => ['enabled' => false],
+            'publisher_confirms' => ['enabled' => false],
+        ];
+
         $manager = new RabbitManager([
             'connection' => 'default',
             'connections' => [
-                'default' => [
-                    'vhost' => '/',
-                    'topology' => ['auto_declare' => false],
-                    'qos' => ['enabled' => false],
-                    'publisher_confirms' => ['enabled' => false],
-                ],
+                'default' => array_replace_recursive($defaultConnectionConfig, $connectionConfig),
             ],
         ], new FakeAmqpFactory(new FakeAmqpConnection($channel)));
 

@@ -2,6 +2,12 @@
 
 All notable changes to `pushinbr/laravel-rabbit` will be documented in this file.
 
+## [0.1.3] - 2026-05-25
+
+### Fixed
+
+- Made publisher confirm mode selection idempotent per AMQP channel to avoid `Server ack'ed unknown delivery_tag` failures when publishing multiple Laravel queue jobs on the same RabbitMQ connection.
+
 ## [0.1.2] - 2026-05-18
 
 ### Changed
@@ -32,3 +38,4 @@ All notable changes to `pushinbr/laravel-rabbit` will be documented in this file
 [0.1.0]: https://github.com/push-in/laravel-rabbit/releases/tag/v0.1.0
 [0.1.1]: https://github.com/push-in/laravel-rabbit/releases/tag/v0.1.1
 [0.1.2]: https://github.com/push-in/laravel-rabbit/releases/tag/v0.1.2
+[0.1.3]: https://github.com/push-in/laravel-rabbit/releases/tag/v0.1.3

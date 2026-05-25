@@ -25,6 +25,9 @@ class RabbitConnection
     /** @var array<string, bool> */
     private array $preparedChannels = [];
 
+    /** @var array<string, bool> */
+    private array $confirmSelectedChannels = [];
+
     /**
      * @param array<string, mixed> $config
      */
@@ -51,6 +54,7 @@ class RabbitConnection
         if ($this->connection === null || ! $this->connection->isConnected()) {
             $this->channels = [];
             $this->preparedChannels = [];
+            $this->confirmSelectedChannels = [];
             $this->connection = $this->connectionFactory->connect($this->name, $this->config);
         }
 
@@ -73,6 +77,7 @@ class RabbitConnection
         $this->connection = null;
         $this->channels = [];
         $this->preparedChannels = [];
+        $this->confirmSelectedChannels = [];
     }
 
     public function isConnected(): bool
@@ -82,7 +87,7 @@ class RabbitConnection
 
     public function channel(?int $channelId = null, bool $prepare = true): AmqpChannel
     {
-        $key = $channelId === null ? 'default' : (string) $channelId;
+        $key = $this->channelKey($channelId);
 
         if (! isset($this->channels[$key])) {
             $this->channels[$key] = $this->connection()->channel($channelId);
@@ -222,10 +227,9 @@ class RabbitConnection
     ): PublishedMessage {
         $this->assertAllowedMessageSize($body);
 
-        $channel = $this->channel(
-            $this->nullableInt(data_get($options, 'channel_id')),
-            (bool) data_get($options, 'prepare_channel', true),
-        );
+        $channelId = $this->nullableInt(data_get($options, 'channel_id'));
+        $channel = $this->channel($channelId, (bool) data_get($options, 'prepare_channel', true));
+        $channelKey = $this->channelKey($channelId);
         $exchange ??= (string) data_get($options, 'exchange', data_get($this->config, 'publish.exchange', ''));
         $routingKey ??= (string) data_get($options, 'routing_key', data_get($this->config, 'publish.routing_key', ''));
         $properties = array_replace((array) data_get($this->config, 'message', []), $properties);
@@ -233,7 +237,7 @@ class RabbitConnection
         $confirm = (bool) data_get($options, 'confirm', data_get($this->config, 'publisher_confirms.enabled', true));
 
         if ($confirm && (bool) data_get($options, 'confirm_select', ! (bool) data_get($this->config, 'publisher_confirms.enabled', true))) {
-            $channel->confirmSelect();
+            $this->confirmSelectChannel($channelKey, $channel);
         }
 
         $channel->basicPublish(
@@ -418,10 +422,26 @@ class RabbitConnection
         }
 
         if ((bool) data_get($this->config, 'publisher_confirms.enabled', true)) {
-            $channel->confirmSelect();
+            $this->confirmSelectChannel($key, $channel);
         }
 
         $this->preparedChannels[$key] = true;
+    }
+
+    private function confirmSelectChannel(string $key, AmqpChannel $channel): void
+    {
+        if (isset($this->confirmSelectedChannels[$key])) {
+            return;
+        }
+
+        $channel->confirmSelect();
+
+        $this->confirmSelectedChannels[$key] = true;
+    }
+
+    private function channelKey(?int $channelId): string
+    {
+        return $channelId === null ? 'default' : (string) $channelId;
     }
 
     /**

@@ -51,6 +51,45 @@ class RabbitConnectionTest extends TestCase
         $this->assertSame('text/plain', $channel->published[0]['message']->get('content_type'));
     }
 
+    public function test_confirm_select_is_idempotent_for_repeated_publishes_on_the_same_channel(): void
+    {
+        $channel = new FakeAmqpChannel();
+        $connection = $this->connection($channel);
+
+        $connection->publish('first', options: [
+            'prepare_channel' => false,
+            'confirm_select' => true,
+        ]);
+        $connection->publish('second', options: [
+            'prepare_channel' => false,
+            'confirm_select' => true,
+        ]);
+
+        $this->assertCount(1, $channel->confirmSelects);
+        $this->assertCount(2, $channel->published);
+        $this->assertSame([5.0, 5.0], $channel->ackWaits);
+    }
+
+    public function test_confirm_select_is_tracked_per_channel(): void
+    {
+        $channel = new FakeAmqpChannel();
+        $connection = $this->connection($channel);
+
+        $connection->publish('first', options: [
+            'channel_id' => 1,
+            'prepare_channel' => false,
+            'confirm_select' => true,
+        ]);
+        $connection->publish('second', options: [
+            'channel_id' => 2,
+            'prepare_channel' => false,
+            'confirm_select' => true,
+        ]);
+
+        $this->assertCount(2, $channel->confirmSelects);
+        $this->assertSame([1, 2], $channel->channelIds);
+    }
+
     public function test_it_publishes_json_messages(): void
     {
         $channel = new FakeAmqpChannel();
